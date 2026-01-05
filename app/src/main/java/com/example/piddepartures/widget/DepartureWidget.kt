@@ -66,7 +66,6 @@ object DepartureWidget : GlanceAppWidget() {
         val error = prefs[androidx.datastore.preferences.core.stringPreferencesKey("error")]
         val departuresJson = prefs[androidx.datastore.preferences.core.stringPreferencesKey("departures")]
         
-        // Určit počet zobrazených odjezdů podle velikosti widgetu
         val maxDepartures = when {
             size.height > 250.dp -> 8
             size.height > 180.dp -> 5

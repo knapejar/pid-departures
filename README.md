@@ -54,10 +54,12 @@ Built using Kotlin, Jetpack Compose, and Golemio Public Transport API.
 
 ## Features
 
-- **Home Screen**: Displays saved stops with the next 3 upcoming departures and time in minutes
-- **Add Stop**: Select stop, transport type, and direction to track
-- **Detail Screen**: Shows up to 10 planned departures for a selected stop with delete option
+- **Home Screen**: Displays saved stops with the next 3 upcoming departures, drag-and-drop reordering
+- **Add Stop**: Search and select stops to track
+- **Detail Screen**: Shows up to 10 planned departures with delete and settings options
+- **Settings**: Customize stop direction display name
 - **Auto-refresh**: Updates departure data every 60 seconds
+- **Widget**: Home screen widget with departure information, click to open detail screen
 
 ## Technical Implementation
 
@@ -67,13 +69,14 @@ Built using Kotlin, Jetpack Compose, and Golemio Public Transport API.
 3. For each stop → API call every 60s
 4. Parse response → Update UI with departures
 5. Detail screen → Fetch more departures (limit 10)
+6. Widget → Updates every 15 minutes via WorkManager
 
 ### API Integration
 - **Endpoint**: `GET /v2/pid/departureboards`
 - **Parameters**: 
   - `ids[]`: Stop ID(s)
   - `minutesAfter`: 60
-  - `limit`: 3 (home) / 10 (detail)
+  - `limit`: 3 (home) / 10 (detail/widget)
   - `filter`: routeHeadingOnce
 - **Auth**: X-Access-Token header with Golemio API key
 
@@ -84,10 +87,8 @@ See official Golemio API docs for more details: [https://api.golemio.cz/pid/docs
 
 ## TODO
 
-- [ ] Better stop search (by name, location, direction)
-- [ ] Implement widget for home screen
-- [ ] Add subway support
-- [ ] Improve error handling and user feedback possibly with github issues
+- [ ] Better stop search filtering
+- [ ] Improve error handling and user feedback
 - [ ] Unit and UI tests
 - [ ] Consider train and bus support with IDOS or other provider
 

@@ -74,7 +74,6 @@ class WidgetConfigActivity : ComponentActivity() {
                 val glanceId = GlanceAppWidgetManager(this@WidgetConfigActivity)
                     .getGlanceIdBy(appWidgetId)
                 
-                // Nastavit počáteční stav widgetu
                 updateAppWidgetState(this@WidgetConfigActivity, glanceId) { prefs ->
                     prefs[longPreferencesKey("stop_id")] = stop.id
                     prefs[stringPreferencesKey("stop_name")] = stop.stopName
@@ -84,8 +83,7 @@ class WidgetConfigActivity : ComponentActivity() {
                 
                 DepartureWidget.update(this@WidgetConfigActivity, glanceId)
                 
-                // Naplánovat periodické aktualizace
-                scheduleWidgetUpdates(stop.id)
+                scheduleWidgetUpdates(stop.id, appWidgetId)
                 
                 // Vrátit výsledek
                 val resultValue = Intent().apply {
@@ -99,7 +97,7 @@ class WidgetConfigActivity : ComponentActivity() {
         }
     }
     
-    private fun scheduleWidgetUpdates(stopId: Long) {
+    private fun scheduleWidgetUpdates(stopId: Long, appWidgetId: Int) {
         val workManager = WorkManager.getInstance(this)
         
         val constraints = Constraints.Builder()
@@ -109,7 +107,10 @@ class WidgetConfigActivity : ComponentActivity() {
         val immediateRequest = OneTimeWorkRequestBuilder<DepartureWidgetWorker>()
             .setConstraints(constraints)
             .setInputData(
-                workDataOf(DepartureWidgetWorker.KEY_STOP_ID to stopId)
+                workDataOf(
+                    DepartureWidgetWorker.KEY_STOP_ID to stopId,
+                    DepartureWidgetWorker.KEY_APP_WIDGET_ID to appWidgetId
+                )
             )
             .build()
         
@@ -120,7 +121,10 @@ class WidgetConfigActivity : ComponentActivity() {
         )
             .setConstraints(constraints)
             .setInputData(
-                workDataOf(DepartureWidgetWorker.KEY_STOP_ID to stopId)
+                workDataOf(
+                    DepartureWidgetWorker.KEY_STOP_ID to stopId,
+                    DepartureWidgetWorker.KEY_APP_WIDGET_ID to appWidgetId
+                )
             )
             .build()
         

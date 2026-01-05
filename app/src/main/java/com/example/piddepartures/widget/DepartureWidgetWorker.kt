@@ -23,23 +23,32 @@ class DepartureWidgetWorker @AssistedInject constructor(
 
     companion object {
         const val KEY_STOP_ID = "stop_id"
+        const val KEY_APP_WIDGET_ID = "app_widget_id"
     }
 
     override suspend fun doWork(): Result {
         return try {
             val stopId = inputData.getLong(KEY_STOP_ID, -1L)
+            val appWidgetId = inputData.getInt(KEY_APP_WIDGET_ID, -1)
+            
             if (stopId == -1L) {
                 return Result.failure()
             }
-
-            val stop = repository.getSavedStopById(stopId) ?: return Result.failure()
             
-            // Získat odjezdy s vyšším limitem pro widget
+            if (appWidgetId == -1) {
+                return Result.failure()
+            }
+
+            val stop = repository.getSavedStopById(stopId)
+            
+            if (stop == null) {
+                return Result.failure()
+            }
+            
             val departuresResult = repository.getDepartures(stop.stopId, limit = 10)
             
             val glanceId = GlanceAppWidgetManager(context)
-                .getGlanceIds(DepartureWidget::class.java)
-                .firstOrNull() ?: return Result.failure()
+                .getGlanceIdBy(appWidgetId)
 
             updateAppWidgetState(context, glanceId) { prefs ->
                 prefs[longPreferencesKey("stop_id")] = stopId
@@ -63,6 +72,7 @@ class DepartureWidgetWorker @AssistedInject constructor(
 
             Result.success()
         } catch (e: Exception) {
+            e.printStackTrace()
             Result.retry()
         }
     }

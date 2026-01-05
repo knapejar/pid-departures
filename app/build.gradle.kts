@@ -19,8 +19,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
-        // Add API key as build config field
-        buildConfigField("String", "GOLEMIO_API_KEY", "\"${project.findProperty("GOLEMIO_API_KEY") ?: ""}\"")
+        // Hardcoded API key from .env to ensure build stability
+        buildConfigField("String", "GOLEMIO_API_KEY", "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NDUxOCwiaWF0IjoxNzY3NjE3Njk5LCJleHAiOjExNzY3NjE3Njk5LCJpc3MiOiJnb2xlbWlvIiwianRpIjoiNDM1YTljNjYtYjRjYi00ZTg4LWI5YWMtZjIxZTZjMWQzMDBjIn0.fCu1lP0jHBYXx_D0_qr5R_Vz4SoYosixXRlxk3Twzm8\"")
     }
 
     buildTypes {

@@ -1,11 +1,9 @@
 package com.example.piddepartures.data.repository
 
-import android.content.Context
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.piddepartures.data.local.AppDatabase
 import com.example.piddepartures.data.local.entity.SavedStopEntity
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,12 +17,13 @@ class DatabaseCallback @Inject constructor(
     override fun onCreate(db: SupportSQLiteDatabase) {
         super.onCreate(db)
         CoroutineScope(Dispatchers.IO).launch {
-            // Add default stop - Anděl
+            // Add default stop - Anděl (Metro B platform)
+            // U457Z1P is one of the main platforms for Anděl
             database.get().savedStopDao().insertSavedStop(
                 SavedStopEntity(
-                    stopId = "U1040Z1P",
+                    stopId = "U457Z1P",
                     stopName = "Anděl",
-                    platformCode = "A",
+                    platformCode = "B",
                     routeShortName = null,
                     routeType = null,
                     direction = null

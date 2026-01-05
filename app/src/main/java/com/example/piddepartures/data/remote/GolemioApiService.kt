@@ -18,7 +18,8 @@ interface GolemioApiService {
     
     @GET("v2/gtfs/stops")
     suspend fun getStops(
-        @Query("names") names: String? = null,
+        @Query("names[]") names: List<String>? = null,
+        @Query("ids[]") ids: List<String>? = null,
         @Query("limit") limit: Int = 100,
         @Query("offset") offset: Int = 0
     ): StopsResponse

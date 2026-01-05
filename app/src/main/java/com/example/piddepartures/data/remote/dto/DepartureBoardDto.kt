@@ -13,9 +13,9 @@ data class DepartureBoardResponse(
 
 data class StopDto(
     @SerializedName("stop_id")
-    val stopId: String,
+    val stopId: String?,
     @SerializedName("stop_name")
-    val stopName: String,
+    val stopName: String?,
     @SerializedName("platform_code")
     val platformCode: String?,
     @SerializedName("stop_lat")
@@ -26,15 +26,15 @@ data class StopDto(
 
 data class DepartureDto(
     @SerializedName("departure_timestamp")
-    val departureTimestamp: DepartureTimestampDto,
+    val departureTimestamp: DepartureTimestampDto?,
     @SerializedName("arrival_timestamp")
     val arrivalTimestamp: DepartureTimestampDto?,
     @SerializedName("route")
-    val route: RouteDto,
+    val route: RouteDto?,
     @SerializedName("trip")
-    val trip: TripDto,
+    val trip: TripDto?,
     @SerializedName("stop")
-    val stop: StopReferenceDto,
+    val stop: StopReferenceDto?,
     @SerializedName("delay")
     val delay: DelayDto?,
     @SerializedName("last_stop")
@@ -45,9 +45,9 @@ data class DepartureTimestampDto(
     @SerializedName("predicted")
     val predicted: String?,
     @SerializedName("scheduled")
-    val scheduled: String,
+    val scheduled: String?,
     @SerializedName("minutes")
-    val minutes: String
+    val minutes: String?
 )
 
 data class RouteDto(
@@ -56,42 +56,42 @@ data class RouteDto(
     @SerializedName("type")
     val type: Int?,
     @SerializedName("is_night")
-    val isNight: Boolean,
+    val isNight: Boolean?,
     @SerializedName("is_regional")
-    val isRegional: Boolean,
+    val isRegional: Boolean?,
     @SerializedName("is_substitute_transport")
-    val isSubstituteTransport: Boolean
+    val isSubstituteTransport: Boolean?
 )
 
 data class TripDto(
     @SerializedName("id")
-    val id: String,
+    val id: String?,
     @SerializedName("headsign")
-    val headsign: String,
+    val headsign: String?,
     @SerializedName("short_name")
     val shortName: String?,
     @SerializedName("is_canceled")
-    val isCanceled: Boolean,
+    val isCanceled: Boolean?,
     @SerializedName("is_wheelchair_accessible")
-    val isWheelchairAccessible: Boolean,
+    val isWheelchairAccessible: Boolean?,
     @SerializedName("is_air_conditioned")
     val isAirConditioned: Boolean?,
     @SerializedName("is_at_stop")
-    val isAtStop: Boolean,
+    val isAtStop: Boolean?,
     @SerializedName("direction")
     val direction: String?
 )
 
 data class StopReferenceDto(
     @SerializedName("id")
-    val id: String,
+    val id: String?,
     @SerializedName("platform_code")
     val platformCode: String?
 )
 
 data class DelayDto(
     @SerializedName("is_available")
-    val isAvailable: Boolean,
+    val isAvailable: Boolean?,
     @SerializedName("minutes")
     val minutes: Int?,
     @SerializedName("seconds")
@@ -107,9 +107,9 @@ data class LastStopDto(
 
 data class InfotextDto(
     @SerializedName("text")
-    val text: String,
+    val text: String?,
     @SerializedName("text_en")
     val textEn: String?,
     @SerializedName("display_type")
-    val displayType: String
+    val displayType: String?
 )

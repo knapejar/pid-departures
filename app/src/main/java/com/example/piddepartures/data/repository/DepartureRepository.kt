@@ -45,19 +45,26 @@ class DepartureRepository @Inject constructor(
                 filter = "routeHeadingOnce"
             )
             
-            val departures = response.departures?.map { dto ->
-                Departure(
-                    routeShortName = dto.route.shortName ?: "",
-                    routeType = dto.route.type ?: 3,
-                    headsign = dto.trip.headsign,
-                    minutes = dto.departureTimestamp.minutes,
-                    platformCode = dto.stop.platformCode,
-                    isDelayed = dto.delay?.isAvailable == true && (dto.delay.minutes ?: 0) > 0,
-                    delayMinutes = dto.delay?.minutes,
-                    isWheelchairAccessible = dto.trip.isWheelchairAccessible,
-                    isAirConditioned = dto.trip.isAirConditioned,
-                    isCanceled = dto.trip.isCanceled
-                )
+            val departures = response.departures?.mapNotNull { dto ->
+                val route = dto.route
+                val trip = dto.trip
+                val ts = dto.departureTimestamp
+                val stop = dto.stop
+                
+                if (route != null && trip?.headsign != null && ts?.minutes != null) {
+                    Departure(
+                        routeShortName = route.shortName ?: "",
+                        routeType = route.type ?: 3,
+                        headsign = trip.headsign,
+                        minutes = ts.minutes,
+                        platformCode = stop?.platformCode,
+                        isDelayed = dto.delay?.isAvailable == true && (dto.delay?.minutes ?: 0) > 0,
+                        delayMinutes = dto.delay?.minutes,
+                        isWheelchairAccessible = trip.isWheelchairAccessible == true,
+                        isAirConditioned = trip.isAirConditioned,
+                        isCanceled = trip.isCanceled == true
+                    )
+                } else null
             } ?: emptyList()
             
             Result.success(departures)
@@ -69,19 +76,25 @@ class DepartureRepository @Inject constructor(
     suspend fun searchStops(query: String): Result<List<StopInfo>> {
         return try {
             val response = apiService.getStops(
-                names = query,
+                names = listOf(query),
                 limit = 20
             )
             
-            val stops = response.features.map { feature ->
-                StopInfo(
-                    stopId = feature.properties.stopId,
-                    stopName = feature.properties.stopName,
-                    platformCode = feature.properties.platformCode,
-                    latitude = feature.geometry.coordinates.getOrNull(1),
-                    longitude = feature.geometry.coordinates.getOrNull(0)
-                )
-            }
+            val stops = response.features?.mapNotNull { feature ->
+                val props = feature.properties
+                val geom = feature.geometry
+                // Only return actual platforms (location_type = 0), not stations (location_type = 1)
+                // because departureboards endpoint requires platform stop_id
+                if (props?.stopId != null && props.stopName != null && props.locationType == 0) {
+                    StopInfo(
+                        stopId = props.stopId,
+                        stopName = props.stopName,
+                        platformCode = props.platformCode,
+                        latitude = geom?.coordinates?.getOrNull(1),
+                        longitude = geom?.coordinates?.getOrNull(0)
+                    )
+                } else null
+            } ?: emptyList()
             
             Result.success(stops)
         } catch (e: Exception) {

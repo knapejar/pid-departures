@@ -3,6 +3,8 @@ name: Build APK
 on:
   push:
     branches: [ main, master ]
+    tags:
+      - 'v*'
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
@@ -10,6 +12,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
     - name: Checkout code
@@ -33,17 +37,36 @@ jobs:
     - name: Build Debug APK
       run: ./gradlew assembleDebug --stacktrace
       
-    - name: Upload Debug APK
+    - name: Build Release APK
+      run: ./gradlew assembleRelease --stacktrace
+      
+    - name: Upload Debug APK (Artifact)
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
         path: app/build/outputs/apk/debug/app-debug.apk
         
-    - name: Build Release APK
-      run: ./gradlew assembleRelease --stacktrace
-      
-    - name: Upload Release APK
+    - name: Upload Release APK (Artifact)
       uses: actions/upload-artifact@v4
       with:
         name: app-release
         path: app/build/outputs/apk/release/app-release-unsigned.apk
+    
+    - name: Create Release
+      if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.ref_name == 'main' && 'latest' || github.ref_name }}
+        name: ${{ github.ref_name == 'main' && 'Latest Build' || github.ref_name }}
+        body: |
+          Automatically generated build from commit ${{ github.sha }}
+          
+          **Debug APK**: For testing with detailed logs
+          **Release APK**: Optimized version (unsigned)
+        files: |
+          app/build/outputs/apk/debug/app-debug.apk
+          app/build/outputs/apk/release/app-release-unsigned.apk
+        prerelease: ${{ github.ref_name == 'main' }}
+        draft: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

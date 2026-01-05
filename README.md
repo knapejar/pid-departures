@@ -7,14 +7,7 @@
 [![Android](https://img.shields.io/badge/Android-24%2B-brightgreen.svg)](https://developer.android.com)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0-purple.svg)](https://kotlinlang.org)
 
-## 📥 Download Latest APK
-
-<div align="center">
-
-[![Download Debug APK](https://img.shields.io/badge/Download-Debug%20APK-blue?style=for-the-badge&logo=android)](https://nightly.link/knapejar/pid-departures/workflows/build/main/app-debug.zip)
-[![Download Release APK](https://img.shields.io/badge/Download-Release%20APK-green?style=for-the-badge&logo=android)](https://nightly.link/knapejar/pid-departures/workflows/build/main/app-release.zip)
-
-</div>
+<a href="https://github.com/knapejar/pid-departures/releases/latest"><img src="https://img.shields.io/badge/Download-Latest_Release-blue?style=for-the-badge&logo=android" alt="Download Latest Release" height="40"></a>
 
 ---
 

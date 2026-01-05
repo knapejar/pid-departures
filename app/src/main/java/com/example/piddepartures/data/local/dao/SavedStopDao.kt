@@ -18,6 +18,10 @@ interface SavedStopDao {
     @Update
     suspend fun updateSavedStop(stop: SavedStopEntity)
     
+    @Update
+    @Transaction
+    suspend fun updateSavedStops(stops: List<SavedStopEntity>)
+    
     @Delete
     suspend fun deleteSavedStop(stop: SavedStopEntity)
     

@@ -79,8 +79,6 @@ fun HomeScreen(
                 }
             }
         } else {
-            // Mutable local list for visual reordering
-            val items = remember(stopsWithDepartures) { stopsWithDepartures.toMutableStateList() }
             var draggedItem by remember { mutableStateOf<StopWithDepartures?>(null) }
             var draggedOffset by remember { mutableStateOf(0f) }
             var initialIndex by remember { mutableStateOf<Int?>(null) }
@@ -93,7 +91,7 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 itemsIndexed(
-                    items, 
+                    stopsWithDepartures, 
                     key = { _, item -> item.savedStop.id }
                 ) { index, stopWithDepartures ->
                     val isDragging = draggedItem?.savedStop?.id == stopWithDepartures.savedStop.id
@@ -118,33 +116,29 @@ fun HomeScreen(
                         onDrag = { _, dragAmount ->
                             draggedOffset += dragAmount.y
                             
-                            // Determine if we should swap items
-                            val currentIndex = items.indexOf(stopWithDepartures)
+                            // Swap POUZE vizuálně ve ViewModelu když překročíš threshold
+                            val currentIndex = stopsWithDepartures.indexOfFirst { it.savedStop.id == stopWithDepartures.savedStop.id }
                             if (currentIndex != -1) {
-                                // If dragged down more than half item height, swap with next
-                                if (draggedOffset > 60f && currentIndex < items.size - 1) {
-                                    val temp = items[currentIndex]
-                                    items[currentIndex] = items[currentIndex + 1]
-                                    items[currentIndex + 1] = temp
+                                if (draggedOffset > 180f && currentIndex < stopsWithDepartures.size - 1) {
+                                    // Swap down
+                                    viewModel.swapItems(currentIndex, currentIndex + 1)
                                     draggedOffset = 0f
-                                }
-                                // If dragged up more than half item height, swap with previous
-                                else if (draggedOffset < -60f && currentIndex > 0) {
-                                    val temp = items[currentIndex]
-                                    items[currentIndex] = items[currentIndex - 1]
-                                    items[currentIndex - 1] = temp
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                } else if (draggedOffset < -180f && currentIndex > 0) {
+                                    // Swap up
+                                    viewModel.swapItems(currentIndex, currentIndex - 1)
                                     draggedOffset = 0f
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                 }
                             }
                         },
                         onDragEnd = {
-                            // Save ONLY when drag ends - find final position
+                            // Save to database
                             draggedItem?.let { dragged ->
                                 initialIndex?.let { from ->
-                                    val to = items.indexOf(dragged)
+                                    val to = stopsWithDepartures.indexOfFirst { it.savedStop.id == dragged.savedStop.id }
                                     if (to != -1 && from != to) {
-                                        // Save to database ONCE
-                                        viewModel.reorderStops(from, to)
+                                        viewModel.saveReorder(from, to)
                                     }
                                 }
                             }

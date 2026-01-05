@@ -24,6 +24,7 @@ class HomeViewModel @Inject constructor(
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
     
     private var refreshJob: Job? = null
+    private var skipNextRefresh = false
     
     init {
         observeSavedStops()
@@ -32,16 +33,29 @@ class HomeViewModel @Inject constructor(
     
     private fun observeSavedStops() {
         viewModelScope.launch {
-            repository.getSavedStops().collect { savedStops ->
-                _stopsWithDepartures.value = savedStops.map { stop ->
-                    StopWithDepartures(
-                        savedStop = stop,
-                        departures = emptyList(),
-                        isLoading = true
-                    )
+            repository.getSavedStops()
+                .collect { savedStops ->
+                    if (skipNextRefresh) {
+                        val currentData = _stopsWithDepartures.value.associateBy { it.savedStop.id }
+                        _stopsWithDepartures.value = savedStops.map { stop ->
+                            currentData[stop.id]?.copy(savedStop = stop) ?: StopWithDepartures(
+                                savedStop = stop,
+                                departures = emptyList(),
+                                isLoading = false
+                            )
+                        }
+                        skipNextRefresh = false
+                    } else {
+                        _stopsWithDepartures.value = savedStops.map { stop ->
+                            StopWithDepartures(
+                                savedStop = stop,
+                                departures = emptyList(),
+                                isLoading = true
+                            )
+                        }
+                        refreshDepartures()
+                    }
                 }
-                refreshDepartures()
-            }
         }
     }
     
@@ -89,13 +103,20 @@ class HomeViewModel @Inject constructor(
         }
     }
     
-    fun reorderStops(fromIndex: Int, toIndex: Int) {
+    fun swapItems(index1: Int, index2: Int) {
         val currentList = _stopsWithDepartures.value.toMutableList()
-        val item = currentList.removeAt(fromIndex)
-        currentList.add(toIndex, item)
-        _stopsWithDepartures.value = currentList
-        
+        if (index1 in currentList.indices && index2 in currentList.indices) {
+            val temp = currentList[index1]
+            currentList[index1] = currentList[index2]
+            currentList[index2] = temp
+            _stopsWithDepartures.value = currentList
+        }
+    }
+    
+    fun saveReorder(fromIndex: Int, toIndex: Int) {
+        skipNextRefresh = true
         viewModelScope.launch {
+            val currentList = _stopsWithDepartures.value
             repository.updateStopsOrder(currentList.map { it.savedStop })
         }
     }

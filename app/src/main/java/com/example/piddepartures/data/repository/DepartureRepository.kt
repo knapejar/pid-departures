@@ -43,9 +43,11 @@ class DepartureRepository @Inject constructor(
     }
     
     suspend fun updateStopsOrder(stops: List<SavedStop>) {
-        stops.forEachIndexed { index, stop ->
-            savedStopDao.updateSavedStop(stop.copy(orderIndex = index).toEntity())
-        }
+        savedStopDao.updateSavedStops(
+            stops.mapIndexed { index, stop ->
+                stop.copy(orderIndex = index).toEntity()
+            }
+        )
     }
     
     suspend fun deleteSavedStop(id: Long) {

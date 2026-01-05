@@ -94,7 +94,6 @@ class WidgetConfigActivity : ComponentActivity() {
                 setResult(Activity.RESULT_OK, resultValue)
                 finish()
             } catch (e: Exception) {
-                e.printStackTrace()
                 finish()
             }
         }

@@ -24,11 +24,12 @@ sealed class Screen(val route: String) {
 
 @Composable
 fun AppNavigation(
-    navController: NavHostController
+    navController: NavHostController,
+    startDestination: String = Screen.Home.route
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route
+        startDestination = startDestination
     ) {
         composable(Screen.Home.route) {
             HomeScreen(

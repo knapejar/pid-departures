@@ -58,6 +58,8 @@ object DepartureWidget : GlanceAppWidget() {
     private fun WidgetContent() {
         val prefs = currentState<androidx.datastore.preferences.core.Preferences>()
         val size = LocalSize.current
+        val context = LocalContext.current
+        val stopId = prefs[longPreferencesKey("stop_id")] ?: 0L
         val stopName = prefs[androidx.datastore.preferences.core.stringPreferencesKey("stop_name")] ?: "PID Departures"
         val direction = prefs[androidx.datastore.preferences.core.stringPreferencesKey("direction")]
         val isLoading = prefs[androidx.datastore.preferences.core.booleanPreferencesKey("is_loading")] ?: false
@@ -80,7 +82,11 @@ object DepartureWidget : GlanceAppWidget() {
                 .padding(12.dp)
                 .clickable(
                     actionStartActivity(
-                        Intent(LocalContext.current, MainActivity::class.java)
+                        Intent(context, MainActivity::class.java).apply {
+                            action = Intent.ACTION_VIEW
+                            putExtra("stopId", stopId)
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        }
                     )
                 )
         ) {

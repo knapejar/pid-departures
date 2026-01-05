@@ -106,6 +106,15 @@ class WidgetConfigActivity : ComponentActivity() {
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
         
+        val immediateRequest = OneTimeWorkRequestBuilder<DepartureWidgetWorker>()
+            .setConstraints(constraints)
+            .setInputData(
+                workDataOf(DepartureWidgetWorker.KEY_STOP_ID to stopId)
+            )
+            .build()
+        
+        workManager.enqueue(immediateRequest)
+        
         val updateRequest = PeriodicWorkRequestBuilder<DepartureWidgetWorker>(
             15, TimeUnit.MINUTES
         )

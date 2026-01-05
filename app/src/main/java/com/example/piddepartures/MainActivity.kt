@@ -17,7 +17,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             PIDDeparturesTheme {
                 val navController = rememberNavController()
-                AppNavigation(navController = navController)
+                val stopId = intent?.getLongExtra("stopId", -1L) ?: -1L
+                AppNavigation(
+                    navController = navController,
+                    startDestination = if (stopId > 0) "detail/$stopId" else "home"
+                )
             }
         }
     }

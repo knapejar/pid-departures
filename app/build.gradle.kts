@@ -19,8 +19,16 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
-        // Hardcoded API key from .env to ensure build stability
-        buildConfigField("String", "GOLEMIO_API_KEY", "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NDUxOCwiaWF0IjoxNzY3NjE3Njk5LCJleHAiOjExNzY3NjE3Njk5LCJpc3MiOiJnb2xlbWlvIiwianRpIjoiNDM1YTljNjYtYjRjYi00ZTg4LWI5YWMtZjIxZTZjMWQzMDBjIn0.fCu1lP0jHBYXx_D0_qr5R_Vz4SoYosixXRlxk3Twzm8\"")
+        // Load API key from local.properties (NOT committed to version control)
+        val properties = org.jetbrains.kotlin.konan.properties.Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            properties.load(localPropertiesFile.inputStream())
+        }
+        
+        // Get API key from local.properties or use empty string as fallback
+        val golemioApiKey = properties.getProperty("GOLEMIO_API_KEY") ?: ""
+        buildConfigField("String", "GOLEMIO_API_KEY", "\"$golemioApiKey\"")
     }
 
     buildTypes {

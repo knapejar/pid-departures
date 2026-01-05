@@ -13,3 +13,10 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Secret files - NEVER commit these!
+.env
+secrets.properties
+
+# API keys and sensitive data
+app/src/main/res/values/secrets.xml

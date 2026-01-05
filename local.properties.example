@@ -1,0 +1,11 @@
+## This file is a template for local.properties
+# Copy this file to local.properties and fill in your actual values
+# NEVER commit local.properties to version control!
+
+# Android SDK location (will be auto-filled by Android Studio)
+sdk.dir=YOUR_ANDROID_SDK_PATH
+
+# Golemio API Key
+# Get yours at: https://api.golemio.cz/api-keys
+# Register for free and generate an API key
+GOLEMIO_API_KEY=YOUR_GOLEMIO_API_KEY_HERE

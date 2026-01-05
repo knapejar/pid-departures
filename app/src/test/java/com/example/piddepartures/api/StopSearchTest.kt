@@ -1,5 +1,6 @@
 package com.example.piddepartures.api
 
+import com.example.piddepartures.BuildConfig
 import com.example.piddepartures.data.local.dao.SavedStopDao
 import com.example.piddepartures.data.remote.GolemioApiService
 import com.example.piddepartures.data.repository.DepartureRepository
@@ -17,7 +18,12 @@ class StopSearchTest {
 
     private lateinit var apiService: GolemioApiService
     private lateinit var repository: DepartureRepository
-    private val apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NDUxOCwiaWF0IjoxNzY3NjE3Njk5LCJleHAiOjExNzY3NjE3Njk5LCJpc3MiOiJnb2xlbWlvIiwianRpIjoiNDM1YTljNjYtYjRjYi00ZTg4LWI5YWMtZjIxZTZjMWQzMDBjIn0.fCu1lP0jHBYXx_D0_qr5R_Vz4SoYosixXRlxk3Twzm8"
+    
+    // Use API key from BuildConfig (loaded from local.properties)
+    // Fallback to test key if not configured
+    private val apiKey = BuildConfig.GOLEMIO_API_KEY.ifEmpty { 
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NDUxOCwiaWF0IjoxNzY3NjE3Njk5LCJleHAiOjExNzY3NjE3Njk5LCJpc3MiOiJnb2xlbWlvIiwianRpIjoiNDM1YTljNjYtYjRjYi00ZTg4LWI5YWMtZjIxZTZjMWQzMDBjIn0.fCu1lP0jHBYXx_D0_qr5R_Vz4SoYosixXRlxk3Twzm8"
+    }
 
     // Mock DAO pro testy
     private val mockDao = object : SavedStopDao {

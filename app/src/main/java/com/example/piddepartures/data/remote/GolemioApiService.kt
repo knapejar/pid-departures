@@ -9,7 +9,8 @@ interface GolemioApiService {
     
     @GET("v2/pid/departureboards")
     suspend fun getDepartureBoards(
-        @Query("ids[]") stopIds: List<String>,
+        @Query("ids[]") stopIds: List<String>? = null,
+        @Query("names[]") names: List<String>? = null,
         @Query("minutesAfter") minutesAfter: Int = 60,
         @Query("minutesBefore") minutesBefore: Int = 0,
         @Query("limit") limit: Int = 10,

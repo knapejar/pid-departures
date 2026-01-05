@@ -141,18 +141,53 @@ class DepartureRepository @Inject constructor(
     }
     
     /**
+     * Převede text s prvním velkým písmenem každého slova.
+     * Např. "namesti miru" -> "Namesti Miru"
+     */
+    private fun String.toTitleCase(): String {
+        return this.split(" ").joinToString(" ") { word ->
+            word.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+        }
+    }
+    
+    /**
+     * Pokusí se přidat diakritiku k běžným českým slovům.
+     * Není perfektní, ale pomůže s vyhledáváním.
+     */
+    private fun String.tryAddDiacritics(): String {
+        val commonWords = mapOf(
+            "namesti" to "Náměstí",
+            "miru" to "Míru",
+            "vaclavske" to "Václavské",
+            "republiky" to "Republiky",
+            "narodni" to "Národní",
+            "muzeum" to "Muzeum",
+            "hradcanska" to "Hradčanská",
+            "andel" to "Anděl",
+            "flora" to "Flora",
+            "zeliv" to "Želiv"
+        )
+        
+        val words = this.lowercase().split(" ")
+        return words.joinToString(" ") { word ->
+            commonWords[word] ?: word.toTitleCase()
+        }
+    }
+    
+    /**
      * Vyhledá zastávky podle dotazu (podporuje částečné vyhledávání bez diakritiky).
      * Cachuje všechny zastávky při prvním volání.
+     * Pro přesnější dotazy (2+ slova) zkouší také přímé API vyhledání.
      */
     suspend fun searchStops(query: String): Result<List<StopInfo>> {
         return try {
-            // Načteme všechny zastávky do cache (pouze při prvním volání)
-            loadAllStopsIfNeeded()
-            
             // Pokud je dotaz prázdný, vrátíme prázdný seznam
             if (query.isBlank()) {
                 return Result.success(emptyList())
             }
+            
+            // Načteme všechny zastávky do cache (pouze při prvním volání)
+            loadAllStopsIfNeeded()
             
             val normalizedQuery = query.trim().removeDiacritics().lowercase()
             
@@ -160,9 +195,53 @@ class DepartureRepository @Inject constructor(
             val filteredStops = allStopsCache?.filter { stop ->
                 val normalizedName = stop.stopName.removeDiacritics().lowercase()
                 normalizedName.contains(normalizedQuery)
-            }?.take(20) ?: emptyList()
+            }?.toMutableList() ?: mutableListOf()
             
-            Result.success(filteredStops)
+            // Pokud dotaz obsahuje více slov (může být přesný název zastávky),
+            // zkusíme také API vyhledání s parametrem names[]
+            val words = query.trim().split("\\s+".toRegex())
+            if (words.size >= 2) {
+                try {
+                    // Zkusíme různé varianty názvu
+                    val queryVariants = listOf(
+                        query.trim(), // původní dotaz
+                        query.toTitleCase(), // První písmeno velké u každého slova
+                        query.tryAddDiacritics() // Pokus přidat diakritiku
+                    ).distinct()
+                    
+                    for (variant in queryVariants) {
+                        val response = apiService.getStops(names = listOf(variant), limit = 20)
+                        val apiStops = response.features?.mapNotNull { feature ->
+                            val props = feature.properties
+                            val geom = feature.geometry
+                            
+                            if (props?.stopId != null && props.stopName != null) {
+                                StopInfo(
+                                    stopId = props.stopId,
+                                    stopName = props.stopName,
+                                    platformCode = props.platformCode,
+                                    latitude = geom?.coordinates?.getOrNull(1),
+                                    longitude = geom?.coordinates?.getOrNull(0)
+                                )
+                            } else null
+                        } ?: emptyList()
+                        
+                        // Přidáme zastávky z API, které ještě nejsou ve filteredStops
+                        apiStops.forEach { apiStop ->
+                            if (filteredStops.none { it.stopId == apiStop.stopId }) {
+                                filteredStops.add(apiStop)
+                            }
+                        }
+                        
+                        // Pokud jsme něco našli, můžeme přestat zkoušet varianty
+                        if (apiStops.isNotEmpty()) break
+                    }
+                } catch (e: Exception) {
+                    // Pokud API selže, prostě použijeme jen cache výsledky
+                }
+            }
+            
+            Result.success(filteredStops.take(20))
         } catch (e: Exception) {
             Result.failure(e)
         }

@@ -117,7 +117,27 @@ class StopSearchTest {
             }
         )
         
+        println("\n=== TEST 4: Vyhledání 'namesti miru' (bez diakritiky, 2 slova) ===")
+        val result4 = repository.searchStops("namesti miru")
+        result4.fold(
+            onSuccess = { stops ->
+                println("Nalezeno zastávek: ${stops.size}")
+                stops.forEach { 
+                    println("  - ${it.stopName} (${it.stopId}) ${it.platformCode ?: ""}")
+                }
+                
+                assert(stops.isNotEmpty()) { "Nebyly nalezeny zastávky pro 'namesti miru'" }
+                assert(stops.any { it.stopName == "Náměstí Míru" }) { 
+                    "Nebyla nalezena přesná shoda 'Náměstí Míru'. Nalezené zastávky: ${stops.map { it.stopName }}" 
+                }
+            },
+            onFailure = { error ->
+                println("CHYBA: ${error.message}")
+                throw error
+            }
+        )
+        
         println("\n✅ Všechny testy prošly!")
-        println("📝 Poznámka: Vyhledávání funguje bez diakritiky a cachuje zastávky")
+        println("📝 Poznámka: Vyhledávání funguje bez diakritiky, cachuje zastávky a pro přesné dotazy používá API")
     }
 }

@@ -1,22 +1,22 @@
 # PID Departures
 
+## To make catching your tram or bus in Prague easier!
+
 [![Build APK](https://github.com/knapejar/pid-departures/actions/workflows/build.yml/badge.svg)](https://github.com/knapejar/pid-departures/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Android](https://img.shields.io/badge/Android-24%2B-brightgreen.svg)](https://developer.android.com)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.0-purple.svg)](https://kotlinlang.org)
 
 ## 📥 Download Latest APK
 
 <div align="center">
 
-### Debug Build (Development)
 [![Download Debug APK](https://img.shields.io/badge/Download-Debug%20APK-blue?style=for-the-badge&logo=android)](https://nightly.link/knapejar/pid-departures/workflows/build/main/app-debug.zip)
-
-### Release Build (Optimized)
 [![Download Release APK](https://img.shields.io/badge/Download-Release%20APK-green?style=for-the-badge&logo=android)](https://nightly.link/knapejar/pid-departures/workflows/build/main/app-release.zip)
 
 </div>
 
 ---
-
-## To make catching your tram or bus in Prague easier!
 
 Prague Public Transport departure tracking application.
 Built using Kotlin, Jetpack Compose, and Golemio Public Transport API.
@@ -53,7 +53,6 @@ Built using Kotlin, Jetpack Compose, and Golemio Public Transport API.
      ```properties
      GOLEMIO_API_KEY=your_actual_api_key_here
      ```
-   - **⚠️ IMPORTANT**: Never commit `local.properties` to version control!
 
 4. **Build and Run**
    - Open project in Android Studio
@@ -89,3 +88,15 @@ Built using Kotlin, Jetpack Compose, and Golemio Public Transport API.
 - Initial stop: "Anděl" (ASW ID: 1040)
 
 See official Golemio API docs for more details: [https://api.golemio.cz/pid/docs/openapi/](https://api.golemio.cz/pid/docs/openapi/) or [https://api.golemio.cz/docs/public-openapi/](https://api.golemio.cz/docs/public-openapi/) or openapi.json file in the project.
+
+## TODO
+
+- [ ] Better stop search (by name, location, direction)
+- [ ] Implement widget for home screen
+- [ ] Add subway support
+- [ ] Improve error handling and user feedback possibly with github issues
+- [ ] Unit and UI tests
+- [ ] Consider train and bus support with IDOS or other provider
+
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

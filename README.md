@@ -1,5 +1,21 @@
 # PID Departures
 
+[![Build APK](https://github.com/knapejar/pid-departures/actions/workflows/build.yml/badge.svg)](https://github.com/knapejar/pid-departures/actions/workflows/build.yml)
+
+## 📥 Download Latest APK
+
+<div align="center">
+
+### Debug Build (Development)
+[![Download Debug APK](https://img.shields.io/badge/Download-Debug%20APK-blue?style=for-the-badge&logo=android)](https://nightly.link/knapejar/pid-departures/workflows/build/main/app-debug.zip)
+
+### Release Build (Optimized)
+[![Download Release APK](https://img.shields.io/badge/Download-Release%20APK-green?style=for-the-badge&logo=android)](https://nightly.link/knapejar/pid-departures/workflows/build/main/app-release.zip)
+
+</div>
+
+---
+
 ## To make catching your tram or bus in Prague easier!
 
 Prague Public Transport departure tracking application.

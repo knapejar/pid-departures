@@ -2,6 +2,7 @@ package com.example.piddepartures.di
 
 import com.example.piddepartures.BuildConfig
 import com.example.piddepartures.data.remote.GolemioApiService
+import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,6 +19,12 @@ import javax.inject.Singleton
 object NetworkModule {
     
     private const val BASE_URL = "https://api.golemio.cz/"
+    
+    @Provides
+    @Singleton
+    fun provideGson(): Gson {
+        return Gson()
+    }
     
     @Provides
     @Singleton
@@ -47,11 +54,11 @@ object NetworkModule {
     
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+    fun provideRetrofit(okHttpClient: OkHttpClient, gson: Gson): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
     }
     

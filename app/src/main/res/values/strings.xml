@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">PID Departures</string>
+    <string name="widget_description">View upcoming departures for your saved stops</string>
+    <string name="widget_loading">Loading departures…</string>
 </resources>

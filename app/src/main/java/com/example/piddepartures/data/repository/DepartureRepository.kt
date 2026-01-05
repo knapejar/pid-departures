@@ -38,6 +38,16 @@ class DepartureRepository @Inject constructor(
         return savedStopDao.insertSavedStop(savedStop.toEntity())
     }
     
+    suspend fun updateSavedStop(savedStop: SavedStop) {
+        savedStopDao.updateSavedStop(savedStop.toEntity())
+    }
+    
+    suspend fun updateStopsOrder(stops: List<SavedStop>) {
+        stops.forEachIndexed { index, stop ->
+            savedStopDao.updateSavedStop(stop.copy(orderIndex = index).toEntity())
+        }
+    }
+    
     suspend fun deleteSavedStop(id: Long) {
         savedStopDao.deleteSavedStopById(id)
     }
@@ -255,6 +265,8 @@ class DepartureRepository @Inject constructor(
         routeShortName = routeShortName,
         routeType = routeType,
         direction = direction,
+        customDirection = customDirection,
+        orderIndex = orderIndex,
         addedAt = addedAt
     )
     
@@ -266,6 +278,8 @@ class DepartureRepository @Inject constructor(
         routeShortName = routeShortName,
         routeType = routeType,
         direction = direction,
+        customDirection = customDirection,
+        orderIndex = orderIndex,
         addedAt = addedAt
     )
 }

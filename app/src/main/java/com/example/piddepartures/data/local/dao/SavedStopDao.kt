@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SavedStopDao {
-    @Query("SELECT * FROM saved_stops ORDER BY addedAt DESC")
+    @Query("SELECT * FROM saved_stops ORDER BY orderIndex ASC, addedAt DESC")
     fun getAllSavedStops(): Flow<List<SavedStopEntity>>
     
     @Query("SELECT * FROM saved_stops WHERE id = :id")
@@ -14,6 +14,9 @@ interface SavedStopDao {
     
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSavedStop(stop: SavedStopEntity): Long
+    
+    @Update
+    suspend fun updateSavedStop(stop: SavedStopEntity)
     
     @Delete
     suspend fun deleteSavedStop(stop: SavedStopEntity)

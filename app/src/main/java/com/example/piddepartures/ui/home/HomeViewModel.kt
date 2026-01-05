@@ -89,6 +89,17 @@ class HomeViewModel @Inject constructor(
         }
     }
     
+    fun reorderStops(fromIndex: Int, toIndex: Int) {
+        val currentList = _stopsWithDepartures.value.toMutableList()
+        val item = currentList.removeAt(fromIndex)
+        currentList.add(toIndex, item)
+        _stopsWithDepartures.value = currentList
+        
+        viewModelScope.launch {
+            repository.updateStopsOrder(currentList.map { it.savedStop })
+        }
+    }
+    
     override fun onCleared() {
         super.onCleared()
         refreshJob?.cancel()

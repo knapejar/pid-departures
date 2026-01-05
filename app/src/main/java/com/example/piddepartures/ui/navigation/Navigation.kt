@@ -9,12 +9,16 @@ import androidx.navigation.navArgument
 import com.example.piddepartures.ui.add.AddStopScreen
 import com.example.piddepartures.ui.detail.DetailScreen
 import com.example.piddepartures.ui.home.HomeScreen
+import com.example.piddepartures.ui.settings.SettingsScreen
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
     object AddStop : Screen("add_stop")
     object Detail : Screen("detail/{stopId}") {
         fun createRoute(stopId: Long) = "detail/$stopId"
+    }
+    object Settings : Screen("settings/{stopId}") {
+        fun createRoute(stopId: Long) = "settings/$stopId"
     }
 }
 
@@ -55,6 +59,26 @@ fun AppNavigation(
         ) { backStackEntry ->
             val stopId = backStackEntry.arguments?.getLong("stopId") ?: 0L
             DetailScreen(
+                stopId = stopId,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToSettings = { 
+                    navController.navigate(Screen.Settings.createRoute(stopId))
+                }
+            )
+        }
+        
+        composable(
+            route = Screen.Settings.route,
+            arguments = listOf(
+                navArgument("stopId") {
+                    type = NavType.LongType
+                }
+            )
+        ) { backStackEntry ->
+            val stopId = backStackEntry.arguments?.getLong("stopId") ?: 0L
+            SettingsScreen(
                 stopId = stopId,
                 onNavigateBack = {
                     navController.popBackStack()

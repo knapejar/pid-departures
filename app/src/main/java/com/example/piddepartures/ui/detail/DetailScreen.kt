@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +23,7 @@ import com.example.piddepartures.domain.model.getRouteTypeIcon
 fun DetailScreen(
     stopId: Long,
     onNavigateBack: () -> Unit,
+    onNavigateToSettings: () -> Unit = {},
     viewModel: DetailViewModel = hiltViewModel()
 ) {
     val savedStop by viewModel.savedStop.collectAsState()
@@ -51,6 +53,9 @@ fun DetailScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                    }
                     IconButton(onClick = { viewModel.refresh() }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                     }
@@ -136,16 +141,44 @@ fun DetailScreen(
                                             style = MaterialTheme.typography.titleLarge,
                                             fontWeight = FontWeight.Bold
                                         )
+                                        
+                                        // Zobrazení obou směrů pokud existuje custom direction
+                                        if (stop.customDirection != null && stop.direction != null) {
+                                            Text(
+                                                text = stop.customDirection,
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.padding(top = 4.dp)
+                                            )
+                                            Text(
+                                                text = "Original: ${stop.direction}",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.padding(top = 2.dp)
+                                            )
+                                        } else {
+                                            (stop.customDirection ?: stop.direction)?.let { direction ->
+                                                Text(
+                                                    text = direction,
+                                                    style = MaterialTheme.typography.bodyLarge,
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.padding(top = 4.dp)
+                                                )
+                                            }
+                                        }
+                                        
                                         stop.platformCode?.let { platform ->
                                             Text(
                                                 text = "Platform: $platform",
-                                                style = MaterialTheme.typography.bodyMedium
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                modifier = Modifier.padding(top = 4.dp)
                                             )
                                         }
                                         Text(
                                             text = "Stop ID: ${stop.stopId}",
                                             style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.padding(top = 2.dp)
                                         )
                                     }
                                 }

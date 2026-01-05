@@ -3,6 +3,7 @@ package com.example.piddepartures.di
 import android.content.Context
 import androidx.room.Room
 import com.example.piddepartures.data.local.AppDatabase
+import com.example.piddepartures.data.local.MIGRATION_1_2
 import com.example.piddepartures.data.local.dao.SavedStopDao
 import com.example.piddepartures.data.repository.DatabaseCallback
 import dagger.Module
@@ -28,6 +29,7 @@ object DatabaseModule {
             "pid_departures_db"
         )
         .addCallback(callback)
+        .addMigrations(MIGRATION_1_2)
         .build()
     }
     

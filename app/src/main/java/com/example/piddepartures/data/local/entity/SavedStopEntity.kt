@@ -13,5 +13,7 @@ data class SavedStopEntity(
     val routeShortName: String?,
     val routeType: Int?,
     val direction: String?,
+    val customDirection: String? = null,
+    val orderIndex: Int = 0,
     val addedAt: Long = System.currentTimeMillis()
 )

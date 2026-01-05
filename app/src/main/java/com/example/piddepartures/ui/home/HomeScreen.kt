@@ -1,24 +1,34 @@
 package com.example.piddepartures.ui.home
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.piddepartures.domain.model.Departure
 import com.example.piddepartures.domain.model.StopWithDepartures
 import com.example.piddepartures.domain.model.getRouteTypeIcon
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     onNavigateToAdd: () -> Unit,
@@ -27,6 +37,7 @@ fun HomeScreen(
 ) {
     val stopsWithDepartures by viewModel.stopsWithDepartures.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val haptic = LocalHapticFeedback.current
     
     Scaffold(
         topBar = {
@@ -68,6 +79,12 @@ fun HomeScreen(
                 }
             }
         } else {
+            // Mutable local list for visual reordering
+            val items = remember(stopsWithDepartures) { stopsWithDepartures.toMutableStateList() }
+            var draggedItem by remember { mutableStateOf<StopWithDepartures?>(null) }
+            var draggedOffset by remember { mutableStateOf(0f) }
+            var initialIndex by remember { mutableStateOf<Int?>(null) }
+            
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -75,11 +92,67 @@ fun HomeScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(stopsWithDepartures, key = { it.savedStop.id }) { stopWithDepartures ->
+                itemsIndexed(
+                    items, 
+                    key = { _, item -> item.savedStop.id }
+                ) { index, stopWithDepartures ->
+                    val isDragging = draggedItem?.savedStop?.id == stopWithDepartures.savedStop.id
+                    val offsetY = if (isDragging) draggedOffset else 0f
+                    
                     StopCard(
                         stopWithDepartures = stopWithDepartures,
                         isRefreshing = isRefreshing,
-                        onClick = { onNavigateToDetail(stopWithDepartures.savedStop.id) }
+                        isDragging = isDragging,
+                        offsetY = offsetY,
+                        onClick = { 
+                            if (draggedItem == null) {
+                                onNavigateToDetail(stopWithDepartures.savedStop.id)
+                            }
+                        },
+                        onDragStart = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            draggedItem = stopWithDepartures
+                            draggedOffset = 0f
+                            initialIndex = index
+                        },
+                        onDrag = { _, dragAmount ->
+                            draggedOffset += dragAmount.y
+                            
+                            // Determine if we should swap items
+                            val currentIndex = items.indexOf(stopWithDepartures)
+                            if (currentIndex != -1) {
+                                // If dragged down more than half item height, swap with next
+                                if (draggedOffset > 60f && currentIndex < items.size - 1) {
+                                    val temp = items[currentIndex]
+                                    items[currentIndex] = items[currentIndex + 1]
+                                    items[currentIndex + 1] = temp
+                                    draggedOffset = 0f
+                                }
+                                // If dragged up more than half item height, swap with previous
+                                else if (draggedOffset < -60f && currentIndex > 0) {
+                                    val temp = items[currentIndex]
+                                    items[currentIndex] = items[currentIndex - 1]
+                                    items[currentIndex - 1] = temp
+                                    draggedOffset = 0f
+                                }
+                            }
+                        },
+                        onDragEnd = {
+                            // Save ONLY when drag ends - find final position
+                            draggedItem?.let { dragged ->
+                                initialIndex?.let { from ->
+                                    val to = items.indexOf(dragged)
+                                    if (to != -1 && from != to) {
+                                        // Save to database ONCE
+                                        viewModel.reorderStops(from, to)
+                                    }
+                                }
+                            }
+                            draggedItem = null
+                            draggedOffset = 0f
+                            initialIndex = null
+                        },
+                        modifier = Modifier.animateItem()
                     )
                 }
             }
@@ -91,13 +164,40 @@ fun HomeScreen(
 fun StopCard(
     stopWithDepartures: StopWithDepartures,
     isRefreshing: Boolean,
-    onClick: () -> Unit
+    isDragging: Boolean = false,
+    offsetY: Float = 0f,
+    onClick: () -> Unit,
+    onDragStart: () -> Unit = {},
+    onDrag: (change: androidx.compose.ui.input.pointer.PointerInputChange, dragAmount: Offset) -> Unit = { _, _ -> },
+    onDragEnd: () -> Unit = {},
+    modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .zIndex(if (isDragging) 1f else 0f)
+            .graphicsLayer {
+                translationY = offsetY
+                alpha = if (isDragging) 0.8f else 1f
+                scaleX = if (isDragging) 1.05f else 1f
+                scaleY = if (isDragging) 1.05f else 1f
+                shadowElevation = if (isDragging) 16f else 2f
+            }
+            .pointerInput(Unit) {
+                detectDragGesturesAfterLongPress(
+                    onDragStart = { onDragStart() },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        onDrag(change, dragAmount)
+                    },
+                    onDragEnd = { onDragEnd() },
+                    onDragCancel = { onDragEnd() }
+                )
+            }
+            .clickable(enabled = !isDragging, onClick = onClick),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isDragging) 16.dp else 2.dp
+        )
     ) {
         Column(
             modifier = Modifier
@@ -115,6 +215,19 @@ fun StopCard(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
+                    
+                    // Zobrazení vlastního směru pokud existuje
+                    val displayDirection = stopWithDepartures.savedStop.customDirection 
+                        ?: stopWithDepartures.savedStop.direction
+                    
+                    displayDirection?.let { direction ->
+                        Text(
+                            text = direction,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    
                     stopWithDepartures.savedStop.platformCode?.let { platform ->
                         Text(
                             text = "Platform: $platform",
